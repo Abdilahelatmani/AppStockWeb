@@ -1,0 +1,102 @@
+/* ============================================================================
+   app.css — Thème inspiré de Dastone Admin (sidebar sombre, contenu clair).
+   ============================================================================ */
+:root {
+  --primary: #6c5ce7;
+  --primary-dark: #5a4bd1;
+  --sidebar-bg: #202942;
+  --sidebar-hover: #2b3557;
+  --sidebar-text: #a6b0cf;
+  --content-bg: #f2f3f8;
+  --topbar-h: 62px;
+  --sidebar-w: 250px;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  background: var(--content-bg);
+  color: #47536b;
+}
+
+/* -------- Écran de connexion -------- */
+.auth-wrapper {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #202942 0%, #3a2f6e 100%); padding: 1rem;
+}
+.auth-card { width: 100%; max-width: 400px; }
+
+/* -------- Sidebar -------- */
+.startbar {
+  position: fixed; top: 0; left: 0; bottom: 0; width: var(--sidebar-w);
+  background: var(--sidebar-bg); z-index: 1000; display: flex; flex-direction: column;
+  transition: transform .2s ease;
+}
+.startbar .brand {
+  height: var(--topbar-h); display: flex; align-items: center; padding: 0 1.25rem;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.startbar .brand .logo { color: #fff; text-decoration: none; font-weight: 700; font-size: 1.15rem; display: flex; align-items: center; gap: .5rem; }
+.startbar-menu { flex: 1; overflow-y: auto; padding: .5rem 0 2rem; }
+.startbar-menu::-webkit-scrollbar { width: 5px; }
+.startbar-menu::-webkit-scrollbar-thumb { background: #3a4568; border-radius: 3px; }
+.menu-label { color: #6b769c; font-size: .68rem; text-transform: uppercase; letter-spacing: .05em; padding: .9rem 1.25rem .3rem; font-weight: 600; }
+.startbar-menu .nav-link {
+  color: var(--sidebar-text); display: flex; align-items: center; gap: .7rem;
+  padding: .6rem 1.25rem; font-size: .9rem; text-decoration: none; border-left: 3px solid transparent;
+}
+.startbar-menu .nav-link:hover { background: var(--sidebar-hover); color: #fff; }
+.startbar-menu .nav-link.active { color: #fff; background: var(--sidebar-hover); border-left-color: var(--primary); }
+.startbar-menu .nav-link i { font-size: 1.05rem; width: 20px; text-align: center; }
+
+/* -------- Topbar -------- */
+.topbar {
+  position: fixed; top: 0; right: 0; left: var(--sidebar-w); height: var(--topbar-h);
+  background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.06); z-index: 900;
+  display: flex; align-items: center; justify-content: space-between; padding: 0 1.25rem;
+}
+.topbar .btn-icon { background: none; border: none; font-size: 1.3rem; color: #47536b; cursor: pointer; }
+.topbar .avatar {
+  width: 38px; height: 38px; border-radius: 50%; background: #e9e7fb; color: var(--primary);
+  display: flex; align-items: center; justify-content: center; font-weight: 600;
+}
+.topbar .app-search input { border-radius: 20px; background: #f2f3f8; border: none; padding: .4rem 1rem; }
+
+/* -------- Contenu -------- */
+.page-wrapper { margin-left: var(--sidebar-w); padding-top: var(--topbar-h); min-height: 100vh; }
+.page-content { padding: 1.5rem; }
+
+/* -------- Cartes / KPI -------- */
+.card { border: none; border-radius: .5rem; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+.kpi-card .kpi-icon {
+  width: 52px; height: 52px; border-radius: .5rem; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
+}
+.kpi-card h3 { font-weight: 700; margin: 0; }
+.text-primary { color: var(--primary) !important; }
+.bg-primary { background: var(--primary) !important; }
+.btn-primary { background: var(--primary); border-color: var(--primary); }
+.btn-primary:hover { background: var(--primary-dark); border-color: var(--primary-dark); }
+.btn-soft-primary { background: #e9e7fb; color: var(--primary); border: none; }
+.btn-soft-primary:hover { background: var(--primary); color: #fff; }
+
+/* -------- Sidebar mobile -------- */
+.startbar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 999; }
+body.sidebar-open .startbar-overlay { display: block; }
+@media (max-width: 991px) {
+  .startbar { transform: translateX(-100%); }
+  body.sidebar-open .startbar { transform: translateX(0); }
+  .topbar { left: 0; }
+  .page-wrapper { margin-left: 0; }
+}
+
+/* -------- Impression étiquette -------- */
+@media print {
+  .startbar, .topbar, .startbar-overlay, .no-print { display: none !important; }
+  .page-wrapper { margin: 0; padding: 0; }
+  .page-content { padding: 0; }
+}
+.qr-label { width: 300px; border: 1px solid #ddd; padding: 1rem; text-align: center; margin: 0 auto; background: #fff; }
+.qr-label .num { font-weight: 700; font-size: 1.1rem; margin-top: .5rem; letter-spacing: .03em; }
+
+table td, table th { vertical-align: middle; }

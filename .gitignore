@@ -1,0 +1,9 @@
+# Fichiers système / éditeur
+.DS_Store
+Thumbs.db
+.vscode/
+*.log
+
+# Marqueur temporaire éventuel pour tests Node (ne doit pas être commité)
+package.json
+node_modules/
