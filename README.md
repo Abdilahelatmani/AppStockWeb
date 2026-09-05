@@ -6,21 +6,12 @@ Aucun serveur, aucune base SQL : les données sont un **JSON stocké dans le nav
 
 ## Lancer l'application
 
-⚠️ **Ne pas ouvrir `index.html` par double-clic** : les navigateurs bloquent les
-modules JavaScript sur le protocole `file://` (la page resterait blanche).
-Il faut un petit serveur local (2 secondes à mettre en place) :
+**Double-cliquez simplement sur `index.html`.** L'application s'ouvre dans votre
+navigateur, sans serveur ni installation. (Le code utilise des scripts classiques,
+pas de modules ES, ce qui permet de fonctionner directement en `file://`.)
 
-**Option 1 — le plus simple (Windows) :** double-cliquez sur **`start.bat`**.
-Il démarre un serveur (Python ou Node.js) et ouvre le navigateur automatiquement.
-
-**Option 2 — VS Code :** installez l'extension *Live Server*, clic droit sur
-`index.html` → *Open with Live Server*.
-
-**Option 3 — ligne de commande :**
-```bash
-python -m http.server 8123
-#   puis ouvrir http://localhost:8123
-```
+> Une connexion internet est nécessaire au premier chargement pour récupérer
+> Bootstrap et les bibliothèques QR/graphiques depuis leur CDN.
 
 ## Connexion (démo)
 

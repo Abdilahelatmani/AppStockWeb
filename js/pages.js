@@ -1,19 +1,19 @@
 // ============================================================================
 //  pages.js — Rendu de toutes les pages (miroir des vues/contrôleurs C#).
+//  Script classique (pas de module) — expose sur window.App.pages.
 // ============================================================================
-
-import { db, save, nextId, StockType, PaletteStatus, MovementType, Roles } from './db.js';
-import * as svc from './services.js';
-import { AppError } from './services.js';
-import {
-  esc, fmtDate, fmtNum, statusBadge, statusLabel, stockTypeLabel, movementLabel,
-  toast, pageHeader, confirmAction
-} from './ui.js';
+(function (App) {
+'use strict';
+const { db, save, nextId, StockType, PaletteStatus, MovementType, Roles } = App;
+const svc = App.svc;
+const { AppError } = App;
+const { esc, fmtDate, fmtNum, statusBadge, statusLabel, stockTypeLabel, movementLabel,
+  toast, pageHeader, confirmAction } = App;
 
 // ---------------------------------------------------------------------------
 //  CONNEXION
 // ---------------------------------------------------------------------------
-export function login(app, onDone) {
+function login(app, onDone) {
   app.innerHTML = `
     <main class="auth-wrapper">
       <div class="auth-card">
@@ -61,7 +61,7 @@ export function login(app, onDone) {
 // ---------------------------------------------------------------------------
 //  TABLEAU DE BORD
 // ---------------------------------------------------------------------------
-export function dashboard(c) {
+function dashboard(c) {
   const d = db();
   const inStock = d.palettes.filter(p => p.status === PaletteStatus.InStock);
   const blocked = d.palettes.filter(p => p.status === PaletteStatus.Blocked);
@@ -115,7 +115,7 @@ export function dashboard(c) {
 // ---------------------------------------------------------------------------
 //  ENTRÉE DE STOCK
 // ---------------------------------------------------------------------------
-export function stockEntry(c) {
+function stockEntry(c) {
   const d = db();
   const clients = d.clients.filter(x => x.isActive);
   const products = d.products.filter(x => x.isActive);
@@ -182,7 +182,7 @@ export function stockEntry(c) {
 // ---------------------------------------------------------------------------
 //  STOCK ACTUEL
 // ---------------------------------------------------------------------------
-export function stock(c, params) {
+function stock(c, params) {
   const q = params && params[0] ? decodeURIComponent(params[0]).toLowerCase() : '';
   const d = db();
   let list = d.palettes.slice().reverse();
@@ -240,7 +240,7 @@ function bindStockActions(c) {
 // ---------------------------------------------------------------------------
 //  DÉTAILS PALETTE
 // ---------------------------------------------------------------------------
-export function paletteDetails(c, params) {
+function paletteDetails(c, params) {
   const p = svc.findPalette(params[0]);
   if (!p) { c.innerHTML = '<div class="alert alert-warning">Palette introuvable.</div>'; return; }
   const pr = svc.findProduct(p.productId), cl = svc.findClient(p.clientId),
@@ -267,7 +267,7 @@ export function paletteDetails(c, params) {
 // ---------------------------------------------------------------------------
 //  HISTORIQUE PALETTE
 // ---------------------------------------------------------------------------
-export function history(c, params) {
+function history(c, params) {
   const d = db();
   if (!params[0]) {
     c.innerHTML = pageHeader('Historique palette', 'Choisir une palette') + `
@@ -298,7 +298,7 @@ export function history(c, params) {
 // ---------------------------------------------------------------------------
 //  SORTIE DE STOCK
 // ---------------------------------------------------------------------------
-export function stockExit(c) {
+function stockExit(c) {
   c.innerHTML = pageHeader('Sortie de stock', 'Rechercher une palette par numéro / QR') + `
     <div class="card"><div class="card-body">
       <div class="input-group mb-3">
@@ -342,7 +342,7 @@ export function stockExit(c) {
 // ---------------------------------------------------------------------------
 //  TRANSFERT
 // ---------------------------------------------------------------------------
-export function transfer(c) {
+function transfer(c) {
   c.innerHTML = pageHeader('Transfert de zone', 'Déplacer une palette') + `
     <div class="card"><div class="card-body">
       <div class="input-group mb-3">
@@ -380,7 +380,7 @@ export function transfer(c) {
 // ---------------------------------------------------------------------------
 //  SCANNER (caméra + saisie manuelle)
 // ---------------------------------------------------------------------------
-export function scan(c) {
+function scan(c) {
   c.innerHTML = pageHeader('Scanner', 'Caméra ou saisie manuelle') + `
     <div class="row g-3">
       <div class="col-md-6"><div class="card"><div class="card-body">
@@ -419,7 +419,7 @@ export function scan(c) {
 // ---------------------------------------------------------------------------
 //  ÉTIQUETTES QR (liste + impression)
 // ---------------------------------------------------------------------------
-export function labels(c) {
+function labels(c) {
   const d = db();
   c.innerHTML = pageHeader('Étiquettes QR', 'Imprimer les étiquettes des palettes') + `
     <div class="card"><div class="card-body"><div class="table-responsive"><table class="table table-hover">
@@ -431,7 +431,7 @@ export function labels(c) {
       }).join('') || '<tr><td colspan="4" class="text-muted">Aucune palette</td></tr>'}</tbody></table></div></div></div>`;
 }
 
-export function labelPrint(c, params) {
+function labelPrint(c, params) {
   const p = svc.findPalette(params[0]);
   if (!p) { c.innerHTML = '<div class="alert alert-warning">Palette introuvable.</div>'; return; }
   const pr = svc.findProduct(p.productId);
@@ -453,7 +453,7 @@ export function labelPrint(c, params) {
 // ---------------------------------------------------------------------------
 //  RAPPORTS (entrées / sorties)
 // ---------------------------------------------------------------------------
-export function reports(c, kind) {
+function reports(c, kind) {
   const d = db();
   const isIn = kind === 'in';
   const list = d.palettes.filter(p => isIn ? true : p.status === PaletteStatus.Exited)
@@ -528,7 +528,7 @@ function crudPage(c, cfg) {
   }));
 }
 
-export function clients(c) {
+function clients(c) {
   crudPage(c, {
     title: 'Clients', key: 'clients', seq: 'client', entity: 'Client',
     columns: [{ label: 'Code', field: 'code' }, { label: 'Nom', field: 'name' }, { label: 'Téléphone', field: 'phone' }, { label: 'Contact', field: 'contactPerson' }],
@@ -537,7 +537,7 @@ export function clients(c) {
       { label: 'ICE', field: 'ice' }, { label: 'IF', field: 'if' }]
   });
 }
-export function products(c) {
+function products(c) {
   crudPage(c, {
     title: 'Produits', key: 'products', seq: 'product', entity: 'Product',
     columns: [{ label: 'Code', field: 'code' }, { label: 'Nom', field: 'name' }, { label: 'Catégorie', field: 'category' }, { label: 'Unité', field: 'unit' }, { label: 'Poids carton', get: r => fmtNum(r.standardCartonWeight) + ' kg' }],
@@ -546,7 +546,7 @@ export function products(c) {
       { label: 'Poids standard / carton (kg)', field: 'standardCartonWeight', type: 'number', step: '0.001' }]
   });
 }
-export function zones(c) {
+function zones(c) {
   crudPage(c, {
     title: 'Zones', key: 'zones', seq: 'zone', entity: 'Zone',
     columns: [{ label: 'Code', field: 'code' }, { label: 'Nom', field: 'name' }, { label: 'Capacité', field: 'capacity' }, { label: 'Description', field: 'description' }],
@@ -558,7 +558,7 @@ export function zones(c) {
 // ---------------------------------------------------------------------------
 //  UTILISATEURS
 // ---------------------------------------------------------------------------
-export function users(c) {
+function users(c) {
   const d = db();
   const roleOpts = Object.entries({ ADMIN: 'Administrateur', SUPERVISOR: 'Superviseur', WAREHOUSE_OPERATOR: 'Opérateur', VIEWER: 'Lecteur' });
   c.innerHTML = pageHeader('Utilisateurs', `${d.users.length} utilisateur(s)`,
@@ -610,7 +610,7 @@ export function users(c) {
 // ---------------------------------------------------------------------------
 //  JOURNAL D'AUDIT
 // ---------------------------------------------------------------------------
-export function audit(c) {
+function audit(c) {
   const d = db();
   const list = d.audits.slice().reverse();
   c.innerHTML = pageHeader("Journal d'audit", `${list.length} entrée(s)`) + `
@@ -625,7 +625,7 @@ export function audit(c) {
 // ---------------------------------------------------------------------------
 //  DONNÉES (import / export / réinitialisation du JSON)
 // ---------------------------------------------------------------------------
-export function settings(c) {
+function settings(c) {
   c.innerHTML = pageHeader('Données (JSON)', 'Sauvegarde et restauration de la base locale') + `
     <div class="card"><div class="card-body">
       <p class="text-muted">Les données sont stockées dans le navigateur (localStorage). Vous pouvez les exporter dans un fichier JSON, les réimporter, ou tout réinitialiser.</p>
@@ -637,22 +637,21 @@ export function settings(c) {
       <textarea class="form-control font-monospace" rows="14" id="json" readonly></textarea>
     </div></div>`;
   const ta = c.querySelector('#json');
-  const refresh = () => { import('./db.js').then(m => ta.value = m.exportJson()); };
-  refresh();
-  c.querySelector('#export').addEventListener('click', () => import('./db.js').then(m => {
-    const blob = new Blob([m.exportJson()], { type: 'application/json' });
+  ta.value = App.exportJson();
+  c.querySelector('#export').addEventListener('click', () => {
+    const blob = new Blob([App.exportJson()], { type: 'application/json' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'database.json'; a.click();
-  }));
+  });
   c.querySelector('#import').addEventListener('change', (e) => {
     const file = e.target.files[0]; if (!file) return;
     const r = new FileReader();
-    r.onload = () => { try { import('./db.js').then(m => { m.importJson(r.result); toast('Import réussi.'); window.appRender(); }); }
+    r.onload = () => { try { App.importJson(r.result); toast('Import réussi.'); window.appRender(); }
       catch { toast('Fichier JSON invalide.', 'danger'); } };
     r.readAsText(file);
   });
   c.querySelector('#reset').addEventListener('click', () => {
     if (!confirmAction('Réinitialiser toutes les données ? Cette action est irréversible.')) return;
-    import('./db.js').then(m => { m.resetDb(); toast('Données réinitialisées.'); location.hash = '#/dashboard'; window.appRender(); });
+    App.resetDb(); toast('Données réinitialisées.'); location.hash = '#/dashboard'; window.appRender();
   });
 }
 
@@ -677,3 +676,11 @@ function showModal(title, bodyHtml, onSave) {
   host.querySelector('#modal-save').addEventListener('click', () => { if (onSave() !== false) modal.hide(); });
   modalEl.addEventListener('hidden.bs.modal', () => host.remove());
 }
+
+// -------- Exposition sur window.App.pages --------
+App.pages = {
+  login, dashboard, stockEntry, stock, paletteDetails, history, stockExit, transfer,
+  scan, labels, labelPrint, reports, clients, products, zones, users, audit, settings
+};
+
+})(window.App);

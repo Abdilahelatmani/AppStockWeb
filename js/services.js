@@ -1,23 +1,25 @@
 // ============================================================================
 //  services.js — Logique métier (miroir de PaletteService/AuditService C#).
 //  Toutes les règles de validation et de mouvement sont ici.
+//  Script classique (pas de module) — expose sur window.App.
 // ============================================================================
-
-import { db, save, nextId, StockType, PaletteStatus, MovementType, Roles } from './db.js';
+(function (App) {
+'use strict';
+const { db, save, nextId, StockType, PaletteStatus, MovementType, Roles } = App;
 
 // -------- Erreur métier avec message utilisateur (comme AppException) --------
-export class AppError extends Error {}
+class AppError extends Error {}
 
 // -------- Session / authentification (locale, non sécurisée) --------
 const SESSION_KEY = 'gestion_stock_session';
 
-export function currentUser() {
+function currentUser() {
   const raw = sessionStorage.getItem(SESSION_KEY) || localStorage.getItem(SESSION_KEY);
   if (!raw) return null;
   try { return JSON.parse(raw); } catch { return null; }
 }
 
-export function login(email, password, remember) {
+function login(email, password, remember) {
   const u = db().users.find(x => x.email.toLowerCase() === (email || '').toLowerCase().trim());
   if (!u || u.password !== password) throw new AppError('E-mail ou mot de passe incorrect.');
   if (!u.isActive) throw new AppError('Ce compte est désactivé.');
@@ -28,20 +30,20 @@ export function login(email, password, remember) {
   return session;
 }
 
-export function logout() {
+function logout() {
   sessionStorage.removeItem(SESSION_KEY);
   localStorage.removeItem(SESSION_KEY);
 }
 
-export function isInRole(...roles) {
+function isInRole(...roles) {
   const u = currentUser();
   return !!u && roles.includes(u.role);
 }
-export const isAdmin = () => isInRole(Roles.Admin);
-export const isSupervisor = () => isInRole(Roles.Supervisor);
+const isAdmin = () => isInRole(Roles.Admin);
+const isSupervisor = () => isInRole(Roles.Supervisor);
 
 // -------- Audit --------
-export function audit(action, entity, entityId, description) {
+function audit(action, entity, entityId, description) {
   const u = currentUser();
   db().audits.push({
     id: nextId('audit'), action, entity, entityId: entityId != null ? String(entityId) : null,
@@ -51,7 +53,7 @@ export function audit(action, entity, entityId, description) {
 }
 
 // -------- Numérotation des palettes : PAL-{année}-{000000} --------
-export function generatePaletteNumber(forDate) {
+function generatePaletteNumber(forDate) {
   const year = new Date(forDate).getFullYear();
   const prefix = `PAL-${year}-`;
   const last = db().palettes
@@ -63,19 +65,19 @@ export function generatePaletteNumber(forDate) {
 }
 
 // -------- Recherche --------
-export function findClient(id) { return db().clients.find(c => c.id === +id); }
-export function findProduct(id) { return db().products.find(p => p.id === +id); }
-export function findZone(id) { return db().zones.find(z => z.id === +id); }
-export function findPalette(id) { return db().palettes.find(p => p.id === +id); }
+function findClient(id) { return db().clients.find(c => c.id === +id); }
+function findProduct(id) { return db().products.find(p => p.id === +id); }
+function findZone(id) { return db().zones.find(z => z.id === +id); }
+function findPalette(id) { return db().palettes.find(p => p.id === +id); }
 
-export function findByQr(qr) {
+function findByQr(qr) {
   qr = (qr || '').trim();
   if (!qr) return null;
   return db().palettes.find(p => p.qrCode === qr || p.paletteNumber === qr) || null;
 }
 
 // -------- Entrée en stock --------
-export function createEntry(dto) {
+function createEntry(dto) {
   const product = findProduct(dto.productId);
   if (!product) throw new AppError('Produit introuvable.');
   if (!product.isActive) throw new AppError('Le produit sélectionné est inactif.');
@@ -121,7 +123,7 @@ export function createEntry(dto) {
 }
 
 // -------- Sortie de stock --------
-export function exitPalette(dto) {
+function exitPalette(dto) {
   const p = findPalette(dto.paletteId);
   if (!p) throw new AppError('Palette introuvable.');
   if (p.status === PaletteStatus.Exited) throw new AppError("Cette palette est déjà sortie de l'entrepôt.");
@@ -153,7 +155,7 @@ export function exitPalette(dto) {
 }
 
 // -------- Transfert de zone --------
-export function transferPalette(dto) {
+function transferPalette(dto) {
   const p = findPalette(dto.paletteId);
   if (!p) throw new AppError('Palette introuvable.');
   if (p.status === PaletteStatus.Exited) throw new AppError("Cette palette est déjà sortie de l'entrepôt.");
@@ -176,7 +178,7 @@ export function transferPalette(dto) {
 }
 
 // -------- Blocage / déblocage --------
-export function setBlocked(paletteId, block, comment) {
+function setBlocked(paletteId, block, comment) {
   const p = findPalette(paletteId);
   if (!p) throw new AppError('Palette introuvable.');
   if (p.status === PaletteStatus.Exited) throw new AppError("Cette palette est déjà sortie de l'entrepôt.");
@@ -197,7 +199,7 @@ export function setBlocked(paletteId, block, comment) {
 }
 
 // -------- Étiquette imprimée --------
-export function markLabelPrinted(paletteId) {
+function markLabelPrinted(paletteId) {
   const p = findPalette(paletteId);
   if (!p) return;
   p.isLabelPrinted = true; p.lastPrintedAt = new Date().toISOString(); p.printCount = (p.printCount || 0) + 1;
@@ -213,6 +215,16 @@ function addMovement(paletteId, type, extra) {
   }, extra));
 }
 
-export function movementsFor(paletteId) {
+function movementsFor(paletteId) {
   return db().movements.filter(m => m.paletteId === +paletteId).sort((a, b) => new Date(a.movementDate) - new Date(b.movementDate));
 }
+
+// -------- Exposition sur window.App (regroupé sous App.svc + AppError) --------
+App.AppError = AppError;
+App.svc = {
+  currentUser, login, logout, isInRole, isAdmin, isSupervisor, audit,
+  generatePaletteNumber, findClient, findProduct, findZone, findPalette, findByQr,
+  createEntry, exitPalette, transferPalette, setBlocked, markLabelPrinted, movementsFor
+};
+
+})(window.App);

@@ -1,11 +1,14 @@
 // ============================================================================
 //  app.js — Coquille de l'application : layout, routeur par hash (#/route),
 //  authentification. Rend l'écran de connexion ou l'admin selon la session.
+//  Script classique (pas de module) — chargé en dernier, après db/ui/services/pages.
 // ============================================================================
-
-import { currentUser, logout, isAdmin, isSupervisor } from './services.js';
-import { esc } from './ui.js';
-import * as pages from './pages.js';
+(function (App) {
+'use strict';
+const { esc } = App;
+const pages = App.pages;
+const currentUser = App.svc.currentUser;
+const logout = App.svc.logout;
 
 // -------- Définition des routes --------
 // render(container, params) ; roles = rôles autorisés (vide = tous connectés).
@@ -147,7 +150,12 @@ function renderShell(app, user, activeRoute) {
 }
 
 window.addEventListener('hashchange', render);
-window.addEventListener('DOMContentLoaded', render);
 
 // Exposé pour les gestionnaires inline des pages.
 window.appRender = render;
+
+// Rendu initial (le script est chargé en fin de <body>, le DOM est prêt).
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', render);
+else render();
+
+})(window.App);

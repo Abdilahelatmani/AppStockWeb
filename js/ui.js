@@ -1,57 +1,59 @@
 // ============================================================================
 //  ui.js — Aides d'interface partagées (toasts, badges, formats, échappement).
+//  Script classique (pas de module) — expose sur window.App.
 // ============================================================================
+(function (App) {
+'use strict';
+const { PaletteStatus, StockType, MovementType } = App;
 
-import { PaletteStatus, StockType, MovementType } from './db.js';
-
-export function esc(s) {
+function esc(s) {
   if (s == null) return '';
   return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
-export function fmtDate(iso) {
+function fmtDate(iso) {
   if (!iso) return '—';
   const d = new Date(iso);
   return d.toLocaleDateString('fr-FR') + ' ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 }
 
-export function fmtNum(n) {
+function fmtNum(n) {
   if (n == null) return '—';
   return Number(n).toLocaleString('fr-FR', { maximumFractionDigits: 3 });
 }
 
 // -------- Libellés --------
-export const statusLabel = {
+const statusLabel = {
   [PaletteStatus.InStock]: 'En stock',
   [PaletteStatus.Exited]: 'Sortie',
   [PaletteStatus.Blocked]: 'Bloquée',
   [PaletteStatus.InTransfer]: 'En transfert',
   [PaletteStatus.Cancelled]: 'Annulée'
 };
-export const statusClass = {
+const statusClass = {
   [PaletteStatus.InStock]: 'bg-success',
   [PaletteStatus.Exited]: 'bg-secondary',
   [PaletteStatus.Blocked]: 'bg-danger',
   [PaletteStatus.InTransfer]: 'bg-warning text-dark',
   [PaletteStatus.Cancelled]: 'bg-dark'
 };
-export function statusBadge(status) {
+function statusBadge(status) {
   return `<span class="badge ${statusClass[status] || 'bg-secondary'}">${esc(statusLabel[status] || '?')}</span>`;
 }
 
-export const stockTypeLabel = {
+const stockTypeLabel = {
   [StockType.ClientStock]: 'Stock client',
   [StockType.PurchaseStock]: 'Stock propre (achat)'
 };
 
-export const movementLabel = {
+const movementLabel = {
   [MovementType.Entry]: 'Entrée', [MovementType.Transfer]: 'Transfert', [MovementType.Exit]: 'Sortie',
   [MovementType.Block]: 'Blocage', [MovementType.Unblock]: 'Déblocage', [MovementType.Adjustment]: 'Ajustement',
   [MovementType.Modification]: 'Modification', [MovementType.Cancellation]: 'Annulation'
 };
 
 // -------- Toasts --------
-export function toast(message, type = 'success') {
+function toast(message, type = 'success') {
   let host = document.getElementById('toast-host');
   if (!host) {
     host = document.createElement('div');
@@ -72,13 +74,21 @@ export function toast(message, type = 'success') {
 }
 
 // -------- En-tête de page --------
-export function pageHeader(title, subtitle, actionsHtml = '') {
+function pageHeader(title, subtitle, actionsHtml = '') {
   return `<div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
     <div><h4 class="mb-0">${esc(title)}</h4>${subtitle ? `<small class="text-muted">${esc(subtitle)}</small>` : ''}</div>
     <div class="d-flex gap-2">${actionsHtml}</div></div>`;
 }
 
 // -------- Confirmation simple --------
-export function confirmAction(message) {
+function confirmAction(message) {
   return window.confirm(message);
 }
+
+// -------- Exposition --------
+App.esc = esc; App.fmtDate = fmtDate; App.fmtNum = fmtNum;
+App.statusLabel = statusLabel; App.statusClass = statusClass; App.statusBadge = statusBadge;
+App.stockTypeLabel = stockTypeLabel; App.movementLabel = movementLabel;
+App.toast = toast; App.pageHeader = pageHeader; App.confirmAction = confirmAction;
+
+})(window.App);

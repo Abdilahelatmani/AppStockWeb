@@ -21,6 +21,12 @@
   <!-- Graphiques du tableau de bord -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
-  <script type="module" src="js/app.js"></script>
+  <!-- Scripts classiques chargés dans l'ordre des dépendances (pas de modules ES,
+       pour fonctionner aussi par double-clic sur index.html via file://). -->
+  <script src="js/db.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/services.js"></script>
+  <script src="js/pages.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>

@@ -2,16 +2,23 @@
 //  db.js — « Base de données » JSON stockée dans le localStorage du navigateur.
 //  Aucune dépendance serveur. Toutes les données (palettes, clients, produits,
 //  zones, mouvements, utilisateurs, audit) sont conservées en un seul objet JSON.
+//
+//  Chargé comme script classique (pas de module ES) pour fonctionner aussi
+//  par double-clic sur index.html (protocole file://). Expose son API sur
+//  l'espace de noms global window.App.
 // ============================================================================
+window.App = window.App || {};
+(function (App) {
+'use strict';
 
 const STORAGE_KEY = 'gestion_stock_db_v1';
 
 // -------- Enumérations (miroir de l'application C#) --------
-export const StockType = { ClientStock: 1, PurchaseStock: 2 };
-export const PaletteStatus = { InStock: 1, Exited: 2, Blocked: 3, InTransfer: 4, Cancelled: 5 };
-export const MovementType = { Entry: 1, Transfer: 2, Exit: 3, Block: 4, Unblock: 5, Adjustment: 6, Modification: 7, Cancellation: 8 };
+const StockType = { ClientStock: 1, PurchaseStock: 2 };
+const PaletteStatus = { InStock: 1, Exited: 2, Blocked: 3, InTransfer: 4, Cancelled: 5 };
+const MovementType = { Entry: 1, Transfer: 2, Exit: 3, Block: 4, Unblock: 5, Adjustment: 6, Modification: 7, Cancellation: 8 };
 
-export const Roles = { Admin: 'ADMIN', Supervisor: 'SUPERVISOR', Operator: 'WAREHOUSE_OPERATOR', Viewer: 'VIEWER' };
+const Roles = { Admin: 'ADMIN', Supervisor: 'SUPERVISOR', Operator: 'WAREHOUSE_OPERATOR', Viewer: 'VIEWER' };
 
 // -------- Données initiales (seed), identiques au DbSeeder d'origine --------
 function seed() {
@@ -45,7 +52,7 @@ function seed() {
 // -------- Chargement / sauvegarde --------
 let _db = null;
 
-export function load() {
+function load() {
   if (_db) return _db;
   const raw = localStorage.getItem(STORAGE_KEY);
   if (raw) {
@@ -58,30 +65,38 @@ export function load() {
   return _db;
 }
 
-export function save() {
+function save() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(_db));
 }
 
-export function db() { return load(); }
+function db() { return load(); }
 
-export function nextId(kind) {
+function nextId(kind) {
   const d = load();
   d._seq[kind] = (d._seq[kind] || 0) + 1;
   return d._seq[kind];
 }
 
 // -------- Import / export du fichier JSON (sauvegarde/restauration) --------
-export function exportJson() {
+function exportJson() {
   return JSON.stringify(load(), null, 2);
 }
 
-export function importJson(text) {
+function importJson(text) {
   const parsed = JSON.parse(text); // lève une erreur si invalide
   _db = parsed;
   save();
 }
 
-export function resetDb() {
+function resetDb() {
   _db = seed();
   save();
 }
+
+// -------- Exposition sur l'espace de noms global --------
+App.StockType = StockType; App.PaletteStatus = PaletteStatus;
+App.MovementType = MovementType; App.Roles = Roles;
+App.load = load; App.save = save; App.db = db; App.nextId = nextId;
+App.exportJson = exportJson; App.importJson = importJson; App.resetDb = resetDb;
+
+})(window.App);
